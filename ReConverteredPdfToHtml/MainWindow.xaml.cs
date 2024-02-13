@@ -1,24 +1,29 @@
-﻿using System.Text;
+﻿using ReConverteredPdfToHtml.Converted.Interfaces;
+using ReConverteredPdfToHtml.Converted.Services;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ReConverteredPdfToHtml
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly ConvertedPdfToHtml _converted;
         public MainWindow()
-        {
+        {           
             InitializeComponent();
+        }
+        private void UploadButton_CLick(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog fileBrowse = new Microsoft.Win32.OpenFileDialog();
+            fileBrowse.Filter = "Pdf Files|*.pdf";
+            bool? response = fileBrowse.ShowDialog();
+            if (response == true) 
+            {               
+                string filePath = fileBrowse.FileName;               
+                MessageBox.Show(filePath);
+                ConvertedPdfToHtml converted = new ConvertedPdfToHtml();
+                converted.PdfToHtml(filePath);
+            }
+            throw new Exception("Ошибка получения html файла");
         }
     }
 }
