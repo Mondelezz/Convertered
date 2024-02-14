@@ -10,7 +10,7 @@ namespace ReConverteredPdfToHtml.Converted.Services
             PdfDocument pdf = new PdfDocument();
             pdf.LoadFromFile(filePath);
             filePath = filePath.Replace(".pdf", "");
-            string filePathHtml = filePath + ".html";
+            string filePathHtml = filePath + ".htm";
             pdf.SaveToFile(filePathHtml);
 
             return filePathHtml;

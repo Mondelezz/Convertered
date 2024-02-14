@@ -6,7 +6,6 @@ namespace ReConverteredPdfToHtml
 {
     public partial class MainWindow : Window
     {
-        private readonly ConvertedPdfToHtml _converted;
         public MainWindow()
         {           
             InitializeComponent();
@@ -22,8 +21,13 @@ namespace ReConverteredPdfToHtml
                 MessageBox.Show(filePath);
                 ConvertedPdfToHtml converted = new ConvertedPdfToHtml();
                 converted.PdfToHtml(filePath);
+                
             }
-            throw new Exception("Ошибка получения html файла");
+            else
+            {
+                throw new Exception("Ошибка получения html файла");
+            }
+            
         }
     }
 }
