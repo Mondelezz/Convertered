@@ -1,19 +1,43 @@
-﻿using ReConverteredPdfToHtml.Converted.Interfaces;
-using Spire.Pdf;
+﻿using Microsoft.Extensions.Logging;
+using ReConverteredPdfToHtml.Converted.Interfaces;
+using System.IO;
 
 namespace ReConverteredPdfToHtml.Converted.Services
 {
     public class ConvertedPdfToHtml : IConverted
     {
-        public string PdfToHtml(string filePath)
+        private readonly ILogger _logger;
+        public ConvertedPdfToHtml(ILogger logger)
+        { 
+            _logger = logger;
+        }
+        public async Task<string> PdfToFixError(string filePath)       
         {
-            PdfDocument pdf = new PdfDocument();
-            pdf.LoadFromFile(filePath);
-            filePath = filePath.Replace(".pdf", "");
-            string filePathHtml = filePath + ".htm";
-            pdf.SaveToFile(filePathHtml);
 
-            return filePathHtml;
+            using(StreamReader reader = new StreamReader(filePath)) 
+            {
+
+                string? line = string.Empty;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    string subString = "https";
+                    int startIndex = line.IndexOf(subString);
+                    if (startIndex != 0)
+                    {
+                        int endIndex = line.IndexOf(" ", startIndex);
+                        string result = line.Substring(startIndex, endIndex - startIndex);
+                        result = result.Replace("-", "");
+                        _logger.Log(LogLevel.Information, result);
+                        await Console.Out.WriteLineAsync( result);
+                    }
+                    else
+                    {
+                        return line;
+                    }
+                   
+                }
+                return line;
+            }
 
         }
     }

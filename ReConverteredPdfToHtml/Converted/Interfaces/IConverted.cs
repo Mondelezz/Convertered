@@ -8,6 +8,6 @@ namespace ReConverteredPdfToHtml.Converted.Interfaces
 {
     public interface IConverted
     {
-        public string PdfToHtml(string filePath);
+        public Task<string> PdfToFixError(string filePath);
     } 
 }
