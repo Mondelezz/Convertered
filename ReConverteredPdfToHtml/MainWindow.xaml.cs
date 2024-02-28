@@ -5,15 +5,46 @@ using PdfSharp.Pdf;
 using System.IO;
 using PdfSharp.Pdf.Content.Objects;
 using PdfSharp.Pdf.Content;
-using System.Text;
-using PdfSharp.Pdf.Advanced;
 using PdfSharp.Drawing;
 using PdfSharp.Fonts;
-using PdfSharp.Quality;
-using Microsoft.Extensions.Options;
 
 namespace ReConverteredPdfToHtml
 {
+    public class CustomFontResolver : IFontResolver
+    {
+        public byte[] GetFont(string faceName)
+        {
+            string fontFilePath = Path.Combine("C:\\Users\\user\\Desktop\\Fonts\\", faceName + ".ttf");
+
+
+            if (File.Exists(fontFilePath))
+            {
+                try
+                {
+                    return File.ReadAllBytes(fontFilePath);
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+
+        public FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
+        {
+            string fontFilePath = Path.Combine("C:/Windows/", familyName + ".ttf");
+
+            if (File.Exists(fontFilePath))
+            {
+                return null;
+            }
+
+            return new FontResolverInfo(familyName, isBold, isItalic);
+        }
+    }
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -22,48 +53,49 @@ namespace ReConverteredPdfToHtml
         }
 
         private void ProcessPdf(string filePath)
-{
-    try
-    {
-        // Загрузка PDF файла
-        PdfDocument document = PdfReader.Open(filePath, PdfDocumentOpenMode.Modify);
-
-        // Обработка каждой страницы
-        foreach (PdfPage page in document.Pages)
         {
-            // Получение текста со страницы
-            IEnumerable<string> textLines = page.ExtractText();
+            try
+            {
+                GlobalFontSettings.FontResolver = new CustomFontResolver();
+                // Загрузка PDF файла
+                PdfDocument document = PdfReader.Open(filePath, PdfDocumentOpenMode.Modify);
 
-            // Объединение строк в единую строку
-            string text = string.Join(Environment.NewLine, textLines);
+                // Обработка каждой страницы
+                foreach (PdfPage page in document.Pages)
+                {
+                    // Получение текста со страницы
+                    IEnumerable<string> textLines = page.ExtractText();
 
-            // Удаление тире из ссылок, начинающихся с "https"
-            text = Regex.Replace(text, @"https[^\s]+", match => match.Value.Replace("-", ""));
+                    // Объединение строк в единую строку
+                    string text = string.Join(Environment.NewLine, textLines);
 
-            // Очистка содержимого страницы
-            page.Contents.Elements.Clear();
+                    // Удаление тире из ссылок, начинающихся с "https"
+                    text = Regex.Replace(text, @"https[^\s]+", match => match.Value.Replace("-", ""));
+
+                    // Очистка содержимого страницы
+                    page.Contents.Elements.Clear();
 
                     // Добавление нового содержимого на страницу
-                    XGraphics gfx = XGraphics.FromPdfPage(page);
-                    XFont font = new XFont("Arial", 12);
+                    using (XGraphics gfx = XGraphics.FromPdfPage(page))
+                    {
+                        XFont font = new XFont("arial", 14);
 
-                    // Пример добавления текста на страницу
-                    gfx.DrawString("Новый текст", font, XBrushes.Black, new XRect(10, 10, page.Width, page.Height), XStringFormats.TopLeft);
+                        gfx.DrawString(text, font, XBrushes.Black, new XRect(10, 10, page.Width, page.Height), XStringFormats.TopLeft);
+                    }
 
-            // Удаление тире из ссылок внутри PDF-страницы
-            page.RemoveHyphensFromUrls();
+                    page.RemoveHyphensFromUrls();
+                }
+
+                // Сохранение изменений в новый файл
+                string outputFilePath = Path.Combine(Path.GetDirectoryName(filePath), "Modified_" + Path.GetFileName(filePath));
+                document.Save(outputFilePath);
+                MessageBox.Show("PDF файл успешно обработан и сохранен как " + Path.GetFileName(outputFilePath));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка: " + ex.Message);
+            }
         }
-
-        // Сохранение изменений в новый файл
-        string outputFilePath = Path.Combine(Path.GetDirectoryName(filePath), "Modified_" + Path.GetFileName(filePath));
-        document.Save(outputFilePath);
-        MessageBox.Show("PDF файл успешно обработан и сохранен как " + Path.GetFileName(outputFilePath));
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show("Ошибка: " + ex.Message);
-    }
-}
 
 
 

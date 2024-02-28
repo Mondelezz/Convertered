@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Convertered" Height="450" Width="731" WindowStyle="ThreeDBorderWindow">
     <Grid x:Name="MainRoot" Background="Gray">
-        <Label Content="Конвертация Pdf файла в HTML, устранение конфликтующих ошибок." HorizontalAlignment="Left" Height="33" Margin="152,24,0,0" VerticalAlignment="Top" Width="416" FontFamily="Microsoft YaHei Light" Opacity="1.25"/>
+        <Label Content="Устранение конфликтующих ошибок в PDF файле" HorizontalAlignment="Left" Height="33" Margin="210,24,0,0" VerticalAlignment="Top" Width="358" FontFamily="Microsoft YaHei Light" Opacity="1.25"/>
         <Button Click="BrowseButton_Click"
                 Content="Загрузить PDF файл"
                 HorizontalAlignment="Left"
