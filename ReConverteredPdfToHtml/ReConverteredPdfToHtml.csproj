@@ -9,11 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IronPdf" Version="2024.2.2" />
+    <PackageReference Include="FreeSpire.PDF" Version="8.6.0" />
     <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-    <PackageReference Include="PDFsharp" Version="6.0.0" />
-    <PackageReference Include="Spire.PDF" Version="10.2.2" />
   </ItemGroup>
 
 </Project>

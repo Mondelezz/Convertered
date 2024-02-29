@@ -3,20 +3,24 @@ using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System.Text;
 using System.IO;
-
+using ReConverteredPdfToHtml.Converted.Interfaces;
+using System;
 
 namespace ReConverteredPdfToHtml
 {
     public partial class MainWindow : Window
     {
+        private readonly IConverted _converted;
+        public MainWindow(IConverted converted)
+        {
+            InitializeComponent();
+            _converted = converted;
+        }
         public MainWindow()
         {
             InitializeComponent();
         }
-
-
-
-        public static string ExtractTextFromPdf(string inputPath)
+        public string ExtractTextFromPdf( string inputPath)
         {                
 
             string directory = System.IO.Path.GetDirectoryName(inputPath);
@@ -37,8 +41,7 @@ namespace ReConverteredPdfToHtml
                     string[] theLines = thePage.Split('\n');
 
                     foreach (var theLine in theLines)
-                    {
-                        // Если строка начинается с "https", удаляем все тире
+                    { 
                         if (theLine.Trim().StartsWith("http") || theLine.Trim().StartsWith("https"))
                         {
                             textPdfFile.AppendLine(theLine.Replace("-", ""));
@@ -55,12 +58,14 @@ namespace ReConverteredPdfToHtml
                 sw.WriteLine(textPdfFile.ToString());
                 sw.Close();
 
+                _converted.ConvertTextToPdfInCSharp(inputTextFilePath, outputPdfPath);
+
                 string text = File.ReadAllText(inputTextFilePath);
                 
             }
             return outputPdfPath;
         }
-        private static string CreateTextFile(string inputPath)
+        private string CreateTextFile(string inputPath)
         {
             if (inputPath == null)
             {
@@ -71,9 +76,11 @@ namespace ReConverteredPdfToHtml
             string inputTextFilePath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_modified.txt");
 
             FileStream fs = File.Create(inputTextFilePath);
-            fs.Close();
+            fs.Close();         
+
             return inputTextFilePath;
         }
+     
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -86,6 +93,7 @@ namespace ReConverteredPdfToHtml
                 ExtractTextFromPdf(filePath);
             }
         }
+
     }
    
         

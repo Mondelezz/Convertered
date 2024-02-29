@@ -1,44 +1,47 @@
-﻿using Microsoft.Extensions.Logging;
-using ReConverteredPdfToHtml.Converted.Interfaces;
+﻿using ReConverteredPdfToHtml.Converted.Interfaces;
+using Spire.Pdf.Graphics;
+using Spire.Pdf;
 using System.IO;
+using System.Drawing;
+using PdfDocument = Spire.Pdf.PdfDocument;
+
 
 namespace ReConverteredPdfToHtml.Converted.Services
 {
     public class ConvertedPdfToHtml : IConverted
-    {
-        private readonly ILogger _logger;
-        public ConvertedPdfToHtml(ILogger logger)
-        { 
-            _logger = logger;
-        }
-        public async Task<string> PdfToFixError(string filePath)       
+    {      
+        public void ConvertTextToPdfInCSharp(string inputTextFilePath, string outputPdfPath)
         {
-
-            using(StreamReader reader = new StreamReader(filePath)) 
+            if (inputTextFilePath == null)
             {
-
-                string? line = string.Empty;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    string subString = "https";
-                    int startIndex = line.IndexOf(subString);
-                    if (startIndex != 0)
-                    {
-                        int endIndex = line.IndexOf(" ", startIndex);
-                        string result = line.Substring(startIndex, endIndex - startIndex);
-                        result = result.Replace("-", "");
-                        _logger.Log(LogLevel.Information, result);
-                        await Console.Out.WriteLineAsync( result);
-                    }
-                    else
-                    {
-                        return line;
-                    }
-                   
-                }
-                return line;
+                throw new Exception("path null");
             }
+            PdfDocument doc = new PdfDocument();
+            PdfPageBase page = doc.Pages.Add();
+            string bodyText = File.ReadAllText(inputTextFilePath);
+            PdfSolidBrush brushBlack = new PdfSolidBrush(new PdfRGBColor(System.Drawing.Color.Black));
 
+            PdfTrueTypeFont headingFont = new PdfTrueTypeFont(new Font("Times New Roman", 14f, FontStyle.Bold), true);
+            PdfTrueTypeFont subHeadingFont = new PdfTrueTypeFont(new Font("Times New Roman", 14f, FontStyle.Bold), true);
+            PdfTrueTypeFont paraFont = new PdfTrueTypeFont(new Font("Times New Roman", 12f, FontStyle.Regular), true);
+
+            PdfStringFormat format = new PdfStringFormat();
+            format.Alignment = PdfTextAlignment.Center;
+
+            PdfTextWidget widget = new PdfTextWidget(bodyText, paraFont, brushBlack);
+
+            Rectangle rect = new Rectangle(0, 100, (int)page.Canvas.ClientSize.Width, (int)page.Canvas.ClientSize.Height);
+
+            PdfTextLayout layout = new PdfTextLayout();
+            layout.Layout = PdfLayoutType.Paginate;
+
+            widget.Draw(page, rect, layout);
+            File.ReadAllText(inputTextFilePath);
+
+       
+            doc.SaveToFile("outputPdfPath");
         }
     }
+
 }
+
