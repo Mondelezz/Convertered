@@ -5,20 +5,17 @@ using System.Text;
 using System.IO;
 using ReConverteredPdfToHtml.Converted.Interfaces;
 using System;
+using ReConverteredPdfToHtml.Converted.Services;
 
 namespace ReConverteredPdfToHtml
 {
     public partial class MainWindow : Window
     {
-        private readonly IConverted _converted;
-        public MainWindow(IConverted converted)
-        {
-            InitializeComponent();
-            _converted = converted;
-        }
+        private ConvertedPdfToHtml pdfConverter;
         public MainWindow()
         {
             InitializeComponent();
+            pdfConverter = new ConvertedPdfToHtml();
         }
         public string ExtractTextFromPdf( string inputPath)
         {                
@@ -26,7 +23,8 @@ namespace ReConverteredPdfToHtml
             string directory = System.IO.Path.GetDirectoryName(inputPath);
             string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(inputPath);
             string fileExtension = System.IO.Path.GetExtension(inputPath);
-            string outputPdfPath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_modified{fileExtension}");
+            string outputPdfPath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_modified_{System.IO.Path.GetRandomFileName()}{fileExtension}");
+
 
             ITextExtractionStrategy its = new LocationTextExtractionStrategy();
 
@@ -58,7 +56,7 @@ namespace ReConverteredPdfToHtml
                 sw.WriteLine(textPdfFile.ToString());
                 sw.Close();
 
-                _converted.ConvertTextToPdfInCSharp(inputTextFilePath, outputPdfPath);
+                pdfConverter.ConvertTextToPdfInCSharp(inputTextFilePath, outputPdfPath);
 
                 string text = File.ReadAllText(inputTextFilePath);
                 

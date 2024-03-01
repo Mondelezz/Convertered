@@ -1,47 +1,47 @@
 ﻿using ReConverteredPdfToHtml.Converted.Interfaces;
 using Spire.Pdf.Graphics;
 using Spire.Pdf;
-using System.IO;
+using System;
 using System.Drawing;
 using PdfDocument = Spire.Pdf.PdfDocument;
-
+using System.IO;
 
 namespace ReConverteredPdfToHtml.Converted.Services
 {
     public class ConvertedPdfToHtml : IConverted
-    {      
+    {
         public void ConvertTextToPdfInCSharp(string inputTextFilePath, string outputPdfPath)
         {
             if (inputTextFilePath == null)
             {
-                throw new Exception("path null");
+                throw new Exception("Path is null.");
             }
-            PdfDocument doc = new PdfDocument();
-            PdfPageBase page = doc.Pages.Add();
-            string bodyText = File.ReadAllText(inputTextFilePath);
-            PdfSolidBrush brushBlack = new PdfSolidBrush(new PdfRGBColor(System.Drawing.Color.Black));
 
-            PdfTrueTypeFont headingFont = new PdfTrueTypeFont(new Font("Times New Roman", 14f, FontStyle.Bold), true);
-            PdfTrueTypeFont subHeadingFont = new PdfTrueTypeFont(new Font("Times New Roman", 14f, FontStyle.Bold), true);
-            PdfTrueTypeFont paraFont = new PdfTrueTypeFont(new Font("Times New Roman", 12f, FontStyle.Regular), true);
+            using (PdfDocument doc = new PdfDocument())
+            {
+                LinkedList<string> Lines = new LinkedList<string>();
 
-            PdfStringFormat format = new PdfStringFormat();
-            format.Alignment = PdfTextAlignment.Center;
+                PdfPageBase page = doc.Pages.Add();
+                
+                string bodyText = File.ReadAllText(inputTextFilePath);
+                PdfSolidBrush brushBlack = new PdfSolidBrush(new PdfRGBColor(Color.Black));
 
-            PdfTextWidget widget = new PdfTextWidget(bodyText, paraFont, brushBlack);
+                PdfTrueTypeFont paraFont = new PdfTrueTypeFont(new Font("Times New Roman", 12f, FontStyle.Regular), true);
 
-            Rectangle rect = new Rectangle(0, 100, (int)page.Canvas.ClientSize.Width, (int)page.Canvas.ClientSize.Height);
+                PdfStringFormat format = new PdfStringFormat();
+                format.Alignment = PdfTextAlignment.Center;
 
-            PdfTextLayout layout = new PdfTextLayout();
-            layout.Layout = PdfLayoutType.Paginate;
+                PdfTextWidget widget = new PdfTextWidget(bodyText, paraFont, brushBlack);
 
-            widget.Draw(page, rect, layout);
-            File.ReadAllText(inputTextFilePath);
+                Rectangle rect = new Rectangle(0, 100, (int)page.Canvas.ClientSize.Width, (int)page.Canvas.ClientSize.Height);
 
-       
-            doc.SaveToFile("outputPdfPath");
+                PdfTextLayout layout = new PdfTextLayout();
+                layout.Layout = PdfLayoutType.Paginate;
+
+                widget.Draw(page, rect, layout);
+
+                doc.SaveToFile(outputPdfPath);
+            }
         }
     }
-
 }
-
