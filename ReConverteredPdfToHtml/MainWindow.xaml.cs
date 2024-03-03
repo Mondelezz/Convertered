@@ -1,10 +1,7 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
-using System.Text;
-using System.IO;
-using ReConverteredPdfToHtml.Converted.Interfaces;
-using System;
 using ReConverteredPdfToHtml.Converted.Services;
 
 namespace ReConverteredPdfToHtml
@@ -12,73 +9,90 @@ namespace ReConverteredPdfToHtml
     public partial class MainWindow : Window
     {
         private ConvertedPdfToHtml pdfConverter;
+
         public MainWindow()
         {
             InitializeComponent();
             pdfConverter = new ConvertedPdfToHtml();
         }
-        public string ExtractTextFromPdf( string inputPath)
-        {                
 
-            string directory = System.IO.Path.GetDirectoryName(inputPath);
-            string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(inputPath);
-            string fileExtension = System.IO.Path.GetExtension(inputPath);
-            string outputPdfPath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_modified_{System.IO.Path.GetRandomFileName()}{fileExtension}");
-
-
-            ITextExtractionStrategy its = new LocationTextExtractionStrategy();
+        public string ExtractAndSplitPdf(string inputPath, int maxPagesPerFile)
+        {
+            List<string> filesTXT = new List<string>();
 
             using (PdfReader reader = new PdfReader(inputPath))
             {
-                StringBuilder textPdfFile = new StringBuilder();
+                int totalNumberOfPages = reader.NumberOfPages;
+                int totalPagesProcessed = 0;
 
-                for (int i = 1; i <= reader.NumberOfPages; i++)
+                while (totalPagesProcessed < totalNumberOfPages)
                 {
-                    string thePage = PdfTextExtractor.GetTextFromPage(reader, i, its);
+                    // Создаем новый файл для каждой порции страниц
+                    string outputTxtPath = CreateTextFile(inputPath, totalPagesProcessed);
+                    filesTXT.Add(outputTxtPath);
 
-                    string[] theLines = thePage.Split('\n');
+                    // Определение числа страниц в текущем файле
+                    int pagesInCurrentFile = Math.Min(maxPagesPerFile, totalNumberOfPages - totalPagesProcessed);
 
-                    foreach (var theLine in theLines)
-                    { 
-                        if (theLine.Trim().StartsWith("http") || theLine.Trim().StartsWith("https"))
+                    using (StreamWriter sw = new StreamWriter(outputTxtPath))
+                    {
+                        // Обработка страниц в текущем файле
+                        for (int i = totalPagesProcessed + 1; i <= totalPagesProcessed + pagesInCurrentFile; i++)
                         {
-                            textPdfFile.AppendLine(theLine.Replace("-", ""));
-                        }
-                        else
-                        {
-                            textPdfFile.AppendLine(theLine);
+                            string thePage = PdfTextExtractor.GetTextFromPage(reader, i, new LocationTextExtractionStrategy());
+                            WriteTextToTxtFile(thePage, sw);
                         }
                     }
+
+                    totalPagesProcessed += pagesInCurrentFile;
                 }
-                string inputTextFilePath = CreateTextFile(inputPath);
-
-                StreamWriter sw = new StreamWriter(inputTextFilePath);
-                sw.WriteLine(textPdfFile.ToString());
-                sw.Close();
-
-                pdfConverter.ConvertTextToPdfInCSharp(inputTextFilePath, outputPdfPath);
-
-                string text = File.ReadAllText(inputTextFilePath);
-                
             }
-            return outputPdfPath;
-        }
-        private string CreateTextFile(string inputPath)
-        {
-            if (inputPath == null)
-            {
-                throw new Exception("Путь не найден");
-            }
+
             string directory = System.IO.Path.GetDirectoryName(inputPath);
             string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(inputPath);
-            string inputTextFilePath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_modified.txt");
+            string outputPdfPath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_merged_{Guid.NewGuid()}.pdf");
 
-            FileStream fs = File.Create(inputTextFilePath);
-            fs.Close();         
+            // Объединение созданных текстовых файлов в один PDF
+            pdfConverter.MergePdfFiles(filesTXT, outputPdfPath);
 
-            return inputTextFilePath;
+            // Удаление текстовых файлов после объединения
+            foreach (var file in filesTXT)
+            {
+                File.Delete(file);
+            }
+
+            MessageBox.Show($"PDF файлы успешно сохранены и объединены по пути:\n{outputPdfPath}", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            return outputPdfPath;
         }
-     
+
+        private void WriteTextToTxtFile(string text, StreamWriter sw)
+        {
+            string[] lines = text.Split('\n');
+
+            foreach (var line in lines)
+            {
+                if (line.Trim().StartsWith("http") || line.Trim().StartsWith("https"))
+                {
+                    sw.WriteLine(line.Replace("-", ""));
+                }
+                else
+                {
+                    sw.WriteLine(line);
+                }
+            }
+        }
+
+        private string CreateTextFile(string inputPath, int pageIndex)
+        {
+            string directory = System.IO.Path.GetDirectoryName(inputPath);
+            string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(inputPath);
+            string outputTxtPath = System.IO.Path.Combine(directory, $"{fileNameWithoutExtension}_part_{pageIndex + 1}.txt");
+
+            using (File.Create(outputTxtPath)) { }
+
+            return outputTxtPath;
+        }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -88,11 +102,8 @@ namespace ReConverteredPdfToHtml
             if (openFileDialog.ShowDialog() == true)
             {
                 string filePath = openFileDialog.FileName;
-                ExtractTextFromPdf(filePath);
+                ExtractAndSplitPdf(filePath, 100);
             }
         }
-
     }
-   
-        
- }
+}

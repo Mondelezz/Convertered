@@ -3,6 +3,6 @@ namespace ReConverteredPdfToHtml.Converted.Interfaces
 {
     public interface IConverted
     {
-        public void ConvertTextToPdfInCSharp(string inputTextFilePath, string outputPdfPath);
+        public void MergePdfFiles(ICollection<string> inputTxtFiles, string outputPdfPath);
     } 
 }

@@ -6,14 +6,24 @@
         xmlns:local="clr-namespace:ReConverteredPdfToHtml"
         mc:Ignorable="d"
         Title="Convertered" Height="450" Width="731" WindowStyle="ThreeDBorderWindow">
-    <Grid x:Name="MainRoot" Background="Gray">
-        <Label Content="Устранение конфликтующих ошибок в PDF файле" HorizontalAlignment="Left" Height="33" Margin="210,24,0,0" VerticalAlignment="Top" Width="358" FontFamily="Microsoft YaHei Light" Opacity="1.25"/>
+    <Grid x:Name="MainRoot" Background="DarkSlateGray">
+        <Label Content="      Устранение конфликтующих символов в PDF файле"  HorizontalAlignment="Center" Height="33" Margin="0,24,0,0" VerticalAlignment="Top" Width="377" FontFamily="Microsoft YaHei Light" Opacity="1.25" RenderTransformOrigin="0.457,0.567" Foreground="White" FontSize="14">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="0.054"/>
+                    <TranslateTransform X="-0.002" Y="-0.016"/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
         <Button Click="BrowseButton_Click"
+                Background="AliceBlue"               
                 Content="Загрузить PDF файл"
                 HorizontalAlignment="Left"
-                Height="32" 
-                Margin="260,84,0,0" 
-                VerticalAlignment="Top"
-                Width="183" />
+                Height="36" 
+                Margin="289,0,0,0" 
+                VerticalAlignment="Center"
+                Width="133" RenderTransformOrigin="0.502,3.578" />
     </Grid>
 </Window>
